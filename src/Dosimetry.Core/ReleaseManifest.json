@@ -1,0 +1,13 @@
+{
+  "ReleaseId": "REL-2026.02.10",
+  "ApplicationVersion": "1.2.0.0",
+  "Documents": {
+    "SRS": "v3.2",
+    "HazardAnalysis": "v1.0",
+    "FunctionalRequirements": "v2.5"
+  },
+  "Environment": {
+    "OS": "Windows 11",
+    "Runtime": ".NET 8.0"
+  }
+}

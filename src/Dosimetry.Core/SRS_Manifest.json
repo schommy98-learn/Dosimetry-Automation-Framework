@@ -1,0 +1,10 @@
+{
+  "DocumentID": "SRS-DOS-001",
+  "Version": "1.5.0",
+  "LastUpdated": "2026-02-12",
+  "Requirements": [
+    { "ID": "REQ-1.0", "Description": "System shall calculate dose volume." },
+    { "ID": "REQ-1.2", "Description": "Finalized plans must update the Billing Portal." },
+    { "ID": "HAZ-01", "Description": "System must disable Finalize button if dose > 110%." }
+  ]
+}

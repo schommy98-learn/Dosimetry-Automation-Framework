@@ -1,0 +1,6 @@
+{
+  "PatientId": "Patient_Zero",
+  "TargetDose": 50.4,
+  "CalculatedVolume": 98.5,
+  "IsCriticallySafe": true
+}

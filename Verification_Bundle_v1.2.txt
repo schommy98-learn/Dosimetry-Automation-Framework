@@ -1,0 +1,32 @@
+==================================================================
+   MEDICAL DEVICE VERIFICATION REPORT - RUN ID: eafb80fb-190e-4d1b-91fc-e2b19be0ed28
+   Date: 2/12/2026 10:03:23 AM
+==================================================================
+
+[CONFIGURATION MANAGEMENT]
+* Windows App Version: 1.2.0.0 (Expected: 1.2.0.0)
+* SRS Manifest: Loaded from Dosimetry.Core
+
+[TEST EXECUTION LOG]
+[10:03:23 AM] STARTING TC-01: Billing Integration
+   [TRACEABILITY] Verification Target: REQ-1.2: Billing Integration
+   [VERIFIED] Requirement REQ-1.2 has been confirmed.
+   -> RESULT: PASS
+   -> NOTES:  Web Portal showed 'Ready to Bill'
+------------------------------------------------------------------
+[10:03:35 AM] STARTING TC-02: Safety Interlock
+   [TRACEABILITY] Verification Target: HAZ-01: Overdose Protection
+   [VERIFIED] Requirement HAZ-01 has been confirmed.
+   -> RESULT: PASS
+   -> NOTES:  Button Disabled & Warning Displayed
+------------------------------------------------------------------
+[10:03:36 AM] STARTING TC-03: Data Persistence
+   [TRACEABILITY] Verification Target: REQ-1.0: Data Persistence
+   [VERIFIED] Requirement REQ-1.0 has been confirmed.
+   -> RESULT: PASS
+   -> NOTES:  Database retained status after restart
+------------------------------------------------------------------
+
+==================================================================
+   END OF VERIFICATION
+==================================================================

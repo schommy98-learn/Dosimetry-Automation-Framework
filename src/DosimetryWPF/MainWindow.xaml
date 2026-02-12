@@ -1,0 +1,24 @@
+﻿<Window x:Class="DosimetryWPF.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="EZFluence Lite - V1.2 (Safety Enabled)" Height="350" Width="500">
+    <Grid Margin="20">
+        <StackPanel>
+            <TextBlock Text="Patient Selection:" FontWeight="Bold" Margin="0,0,0,5"/>
+            <ComboBox x:Name="PatientDropdown" SelectionChanged="PatientDropdown_SelectionChanged" Margin="0,0,0,20">
+                <ComboBoxItem Content="Patient_Normal" IsSelected="True"/>
+                <ComboBoxItem Content="Patient_Hazard"/>
+            </ComboBox>
+
+            <TextBlock Text="Target Dose (Gy):" FontWeight="Bold"/>
+            <TextBox x:Name="TargetDoseInput" Text="50.0" IsReadOnly="True" Background="#EEE" Margin="0,0,0,10"/>
+
+            <TextBlock Text="Calculated Dose (Gy):" FontWeight="Bold"/>
+            <TextBox x:Name="DoseInput" TextChanged="DoseInput_TextChanged" Margin="0,0,0,5"/>
+            
+            <TextBlock x:Name="SafetyLabel" Text="Status: Safe" Foreground="Green" Margin="0,0,0,20"/>
+
+            <Button x:Name="FinalizeButton" Content="Finalize Plan" Click="FinalizeButton_Click" Height="40" Background="#DDDDDD"/>
+        </StackPanel>
+    </Grid>
+</Window>

@@ -1,0 +1,52 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "QuickCode Lite - Billing Status";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Billing Verification Queue</h1>
+    <p>Real-time status from Dosimetry Planning System</p>
+
+    <table class="table table-bordered table-striped" style="margin-top: 20px;">
+        <thead class="thead-dark">
+            <tr>
+                <th>Patient ID</th>
+                <th>Planned Dose (Gy)</th>
+                <th>Status</th>
+                <th>Billing Ready?</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var patient in Model.Patients)
+            {
+                <tr>
+                    <td>@patient.Id</td>
+                    <td>@patient.Dose</td>
+                    
+                    <td>
+                        @if (patient.IsHazard)
+                        {
+                            <span class="badge bg-warning text-dark">High Risk Protocol</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Standard</span>
+                        }
+                    </td>
+
+                    <td style="font-size: 1.2em;">
+                        @if (patient.IsFinalized)
+                        {
+                            <span style="color: green;">&#10004; Ready to Bill</span>
+                        }
+                        else
+                        {
+                            <span style="color: red;">&#10006; Pending Plan</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
