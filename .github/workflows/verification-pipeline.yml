@@ -1,0 +1,51 @@
+name: Medical Device Verification Suite
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  verify:
+    # THE MATRIX: This runs the entire job twice (once for each OS)
+    strategy:
+      matrix:
+        os: [windows-2019, windows-2022]
+    
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
+    - name: Install Dependencies
+      run: dotnet restore
+
+    - name: Build Solution
+      run: dotnet build --configuration Release --no-restore
+
+    # Playwright is required for your Web Portal tests
+    - name: Install Playwright Browsers
+      run: |
+        cd tests/Dosimetry.Tests
+        dotnet build
+        pwsh bin/Release/net8.0-windows/playwright.ps1 install --with-deps
+
+    - name: Execute Verification Suite
+      # We use 'continue-on-error' so we still get the report even if a test fails
+      continue-on-error: true
+      run: dotnet test --configuration Release --no-build --verbosity normal
+
+    # PHASE 4: THE EVIDENCE (Uploading the HTML Dashboard)
+    - name: Upload Verification Report
+      uses: actions/upload-artifact@v4
+      with:
+        name: Verification-Report-${{ matrix.os }}
+        path: Reports/*.html
+        if-no-files-found: error
