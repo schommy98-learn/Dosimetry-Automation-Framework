@@ -1,1 +1,1 @@
-{"total":1,"items":[{"uid":"5cec7519a0d9b8bb1ca97fa93199c13e","name":"Dosimetry.Tests.VerificationSuite","statistic":{"failed":0,"broken":0,"skipped":0,"passed":3,"unknown":0,"total":3}}]}
+{"total":1,"items":[{"uid":"5cec7519a0d9b8bb1ca97fa93199c13e","name":"Dosimetry.Tests.VerificationSuite","statistic":{"failed":1,"broken":0,"skipped":0,"passed":2,"unknown":0,"total":3}}]}
