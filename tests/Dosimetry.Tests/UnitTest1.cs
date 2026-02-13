@@ -10,6 +10,7 @@ using FlaUI.Core.AutomationElements;
 using Microsoft.Playwright;
 using Dosimetry.Core;
 using System;
+using System.Runtime.InteropServices; // Required for OS Detection
 using AventStack.ExtentReports;
 using AventStack.ExtentReports.Reporter;
 
@@ -28,19 +29,18 @@ namespace Dosimetry.Tests
         [OneTimeSetUp]
         public void SetupAudit()
         {
-            // 1. SETUP REPORTING DIRECTORY (No more overwriting!)
+            // 1. SETUP REPORTING DIRECTORY
             string rootDir = Path.GetFullPath(Path.Combine(TestContext.CurrentContext.TestDirectory, "../../../../../"));
             _reportFolder = Path.Combine(rootDir, "Reports");
             Directory.CreateDirectory(_reportFolder);
 
             // 2. CONFIGURE HTML REPORT
-            // We use a Timestamp so every run is saved separately
             string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
             string reportPath = Path.Combine(_reportFolder, $"Verification_Run_{timestamp}.html");
             
             var htmlReporter = new ExtentSparkReporter(reportPath);
             htmlReporter.Config.DocumentTitle = "Medical Device Verification";
-            htmlReporter.Config.ReportName = $"Run ID: {Guid.NewGuid()}";
+            htmlReporter.Config.ReportName = "Dosimetry Verification Suite"; 
             htmlReporter.Config.Theme = AventStack.ExtentReports.Reporter.Config.Theme.Standard;
 
             _extent = new ExtentReports();
@@ -50,10 +50,30 @@ namespace Dosimetry.Tests
             _wpfAppPath = Path.Combine(rootDir, "src/DosimetryWPF/bin/Debug/net8.0-windows/DosimetryWPF.exe");
             _webAppPath = Path.Combine(rootDir, "src/DosimetryWeb");
 
-            // 4. LOG SYSTEM INFO TO DASHBOARD
-            var wpfVersion = FileVersionInfo.GetVersionInfo(_wpfAppPath).FileVersion;
-            _extent.AddSystemInfo("Environment", "Local Dev");
-            _extent.AddSystemInfo("User", Environment.UserName);
+            // ---------------------------------------------------------
+            // DYNAMIC ENVIRONMENT CAPTURE (THE "MATRIX" LOGIC)
+            // ---------------------------------------------------------
+            string osDescription = RuntimeInformation.OSDescription;
+            string machineName = Environment.MachineName;
+            
+            // Check if we are running in GitHub Actions or Local
+            string runId = Environment.GetEnvironmentVariable("GITHUB_RUN_NUMBER") ?? "Local Run";
+            string workflow = Environment.GetEnvironmentVariable("GITHUB_WORKFLOW") ?? "Manual Debug";
+            string branch = Environment.GetEnvironmentVariable("GITHUB_REF_NAME") ?? "Local Branch";
+
+            // Safely get version
+            string wpfVersion = "1.0.0";
+            if(File.Exists(_wpfAppPath))
+            {
+                 wpfVersion = FileVersionInfo.GetVersionInfo(_wpfAppPath).FileVersion;
+            }
+
+            // INJECT INTO DASHBOARD HEADER
+            _extent.AddSystemInfo("Host OS", osDescription);
+            _extent.AddSystemInfo("Machine Name", machineName);
+            _extent.AddSystemInfo("Run Source", workflow);
+            _extent.AddSystemInfo("Build/Run ID", runId);
+            _extent.AddSystemInfo("Branch", branch);
             _extent.AddSystemInfo("WPF App Version", wpfVersion);
             _extent.AddSystemInfo("SRS Manifest", "v1.5.0");
 
@@ -63,7 +83,6 @@ namespace Dosimetry.Tests
         [OneTimeTearDown]
         public void GenerateReport()
         {
-            // Writes the HTML file to disk
             _extent.Flush();
             Console.WriteLine($"\n[AUDIT] Dashboard generated at: {_reportFolder}");
         }
@@ -87,8 +106,12 @@ namespace Dosimetry.Tests
                 using (var automation = new UIA3Automation())
                 {
                     var window = app.GetMainWindow(automation);
-                    window.FindFirstDescendant(cf => cf.ByAutomationId("DoseInput")).AsTextBox().Enter("50.0");
-                    window.FindFirstDescendant(cf => cf.ByAutomationId("FinalizeButton")).AsButton().Invoke();
+                    var doseInput = window.FindFirstDescendant(cf => cf.ByAutomationId("DoseInput")).AsTextBox();
+                    doseInput.Enter("50.0");
+                    
+                    var finalizeBtn = window.FindFirstDescendant(cf => cf.ByAutomationId("FinalizeButton")).AsButton();
+                    finalizeBtn.Invoke();
+                    
                     System.Threading.Thread.Sleep(1000); 
                     app.Close();
                 }
@@ -156,7 +179,7 @@ namespace Dosimetry.Tests
         [Test, Order(3)]
         [Category("Reliability")]
         [Property("SRS", "REQ-1.0: Data Persistence")]
-        [Property("TestVersion", "1.2")] // <--- NEW: Version of this specific test logic
+        [Property("TestVersion", "1.2")] 
         public void TC03_DataPersistence_Restart()
         {
             StartTest("TC-03: Data Persistence", "REQ-1.0");
@@ -166,57 +189,43 @@ namespace Dosimetry.Tests
             {
                 var window = app1.GetMainWindow(automation);
                 window.FindFirstDescendant(cf => cf.ByAutomationId("PatientDropdown")).AsComboBox().Select("Patient_Hazard");
-                
-                // USER CHANGE: You changed this to 55.0
                 window.FindFirstDescendant(cf => cf.ByAutomationId("DoseInput")).AsTextBox().Enter("55.0");
-                
-                // We intentionally do NOT click Finalize
                 app1.Close();
             }
 
             DatabaseManager.Initialize(); 
             
-            // ---------------------------------------------------------
-            // FORCE FAILURE: SIMULATING A "BAD TEST CASE"
-            // ---------------------------------------------------------
-            // We are going to check 'Patient_Hazard' instead of 'Patient_Normal'.
-            // Since we never clicked Finalize, this should be FALSE.
-            // But we will Assert that it is TRUE to simulate an incorrect expectation.
             bool isHazardFinalized = false;
             using (var conn = new Microsoft.Data.Sqlite.SqliteConnection(DatabaseManager.ConnectionString))
             {
                 conn.Open();
                 var cmd = conn.CreateCommand();
-                cmd.CommandText = "SELECT IsFinalized FROM Patients WHERE Id = 'Patient_Hazard'";
+                //For testing bad test step: change Patients WHERE Id = Patient_Normal, is pass and Patient_Hazard is fail
+                cmd.CommandText = "SELECT IsFinalized FROM Patients WHERE Id = 'Patient_Normal'";
                 long result = (long)cmd.ExecuteScalar();
                 isHazardFinalized = (result == 1);
             }
 
-            // This will FAIL because isHazardFinalized is false, but we demand True.
             if(isHazardFinalized)
             {
                 LogPass("Database retained status after restart");
             }
             else
             {
-                // This is where we land!
                 LogFail($"Persistence Failed! Expected 'Patient_Hazard' to be Finalized, but DB said: {isHazardFinalized}");
                 Assert.Fail("Persistence Failed - Outdated Test Expectation");
             }
         }
 
         // ---------------------------------------------------------
-        // NEW DASHBOARD HELPERS
+        // DASHBOARD HELPERS
         // ---------------------------------------------------------
         private void StartTest(string testName, string requirement)
         {
-            // NEW: Grab the Test Version from the [Property] tag
             var version = TestContext.CurrentContext.Test.Properties.Get("TestVersion") as string ?? "1.0";
-
-            // Creates a new entry in the HTML report
-            _currentTest = _extent.CreateTest($"{testName} (v{version})") // <--- Appends Version to Name
-                                  .AssignCategory(requirement);
+            _currentTest = _extent.CreateTest($"{testName} (v{version})").AssignCategory(requirement);
         }
+
         private void LogPass(string message)
         {
             _currentTest.Pass(message);
@@ -229,15 +238,18 @@ namespace Dosimetry.Tests
 
         private Process StartWebApp(string projectPath)
         {
-            var startInfo = new ProcessStartInfo
-            {
-                FileName = "dotnet",
-                Arguments = $"run --project \"{projectPath}/DosimetryWeb.csproj\" --urls=http://localhost:5070",
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                CreateNoWindow = true
-            };
+            // Simplified syntax to prevent compiler errors
+            var startInfo = new ProcessStartInfo();
+            startInfo.FileName = "dotnet";
+            
+            // Note: We use the forward slash which works in dotnet CLI argument strings
+            startInfo.Arguments = $"run --project \"{projectPath}/DosimetryWeb.csproj\" --urls=http://localhost:5070";
+            
+            startInfo.RedirectStandardOutput = true;
+            startInfo.RedirectStandardError = true;
+            startInfo.UseShellExecute = false;
+            startInfo.CreateNoWindow = true;
+
             return Process.Start(startInfo);
         }
     }

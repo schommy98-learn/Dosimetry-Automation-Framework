@@ -68,7 +68,7 @@ private void FinalizeButton_Click(object sender, RoutedEventArgs e)
                     // We changed IsFinalized = 1 (True) to IsFinalized = 0 (False)
                     // This simulates a developer accidentally breaking the billing logic.
                     // =================================================================
-                    var cmd = new SqliteCommand("UPDATE Patients SET IsFinalized = 0, DoseValue = @d WHERE Id = @p", conn);
+                    var cmd = new SqliteCommand("UPDATE Patients SET IsFinalized = 1, DoseValue = @d WHERE Id = @p", conn);
                     
                     cmd.Parameters.AddWithValue("@d", dose);
                     cmd.Parameters.AddWithValue("@p", patientId);
