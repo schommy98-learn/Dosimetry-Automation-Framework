@@ -1,18 +1,20 @@
-name: Medical Device Verification Suite
+name: Medical Device Verification & Trend Analysis
 
 on:
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+
+permissions:
+  contents: write  # Allows the action to create the gh-pages branch
+  pages: write
+  id-token: write
 
 jobs:
   verify:
-    # THE MATRIX: This runs the entire job twice (once for each OS)
+    name: Verify on ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-2019, windows-2022]
-    
+        os: [windows-2022] # Keeping it simple for the first trend graph
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -24,28 +26,41 @@ jobs:
       with:
         dotnet-version: 8.0.x
 
-    - name: Install Dependencies
-      run: dotnet restore
-
-    - name: Build Solution
-      run: dotnet build --configuration Release --no-restore
-
-    # Playwright is required for your Web Portal tests
     - name: Install Playwright Browsers
       run: |
         cd tests/Dosimetry.Tests
         dotnet build
-        pwsh bin/Release/net8.0-windows/playwright.ps1 install --with-deps
+        pwsh bin/Debug/net8.0-windows/playwright.ps1 install --with-deps
 
-    - name: Execute Verification Suite
-      # We use 'continue-on-error' so we still get the report even if a test fails
+    - name: Execute Verification (Generate TRX)
       continue-on-error: true
-      run: dotnet test --configuration Release --no-build --verbosity normal
+      # KEY CHANGE: We added '--logger trx' to generate the XML data Allure needs
+      run: dotnet test --configuration Debug --logger "trx;LogFileName=test_results.trx"
 
-    # PHASE 4: THE EVIDENCE (Uploading the HTML Dashboard)
-    - name: Upload Verification Report
-      uses: actions/upload-artifact@v4
+    # ---------------------------------------------------------
+    # NEW: HISTORY & REPORT GENERATION
+    # ---------------------------------------------------------
+    
+    - name: Load Test History
+      uses: actions/checkout@v4
+      if: always()
+      continue-on-error: true
       with:
-        name: Verification-Report-${{ matrix.os }}
-        path: Reports/*.html
-        if-no-files-found: error
+        ref: gh-pages
+        path: gh-pages
+
+    - name: Build Allure Report
+      uses: simple-elf/allure-report-action@master
+      if: always()
+      with:
+        allure_results: tests/Dosimetry.Tests/TestResults
+        allure_history: gh-pages/allure-history
+        keep_reports: 20
+
+    - name: Deploy Report to GitHub Pages
+      if: always()
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_branch: gh-pages
+        publish_dir: allure-history
