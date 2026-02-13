@@ -5,18 +5,17 @@ on:
     branches: [ "main" ]
 
 permissions:
-  contents: write  # Allows the action to create the gh-pages branch
+  contents: write
   pages: write
   id-token: write
 
 jobs:
+  # -----------------------------------------------------------------
+  # JOB 1: THE TEST RUNNER (WINDOWS)
+  # -----------------------------------------------------------------
   verify:
-    name: Verify on ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [windows-2022] # Keeping it simple for the first trend graph
-    runs-on: ${{ matrix.os }}
-
+    name: Verify on Windows 2022
+    runs-on: windows-2022
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -34,13 +33,39 @@ jobs:
 
     - name: Execute Verification (Generate TRX)
       continue-on-error: true
-      # KEY CHANGE: We added '--logger trx' to generate the XML data Allure needs
-      run: dotnet test --configuration Debug --logger "trx;LogFileName=test_results.trx"
+      # We force the results into a specific folder so we can find them easily
+      run: dotnet test --configuration Debug --logger "trx;LogFileName=test_results.trx" --results-directory ./TestResults
 
-    # ---------------------------------------------------------
-    # NEW: HISTORY & REPORT GENERATION
-    # ---------------------------------------------------------
-    
+    # HAND-OFF STEP: Upload the raw XML results so the Linux job can see them
+    - name: Upload Test Results
+      uses: actions/upload-artifact@v4
+      with:
+        name: raw-test-results
+        path: TestResults/*.trx
+        if-no-files-found: error
+
+  # -----------------------------------------------------------------
+  # JOB 2: THE REPORTER (LINUX)
+  # -----------------------------------------------------------------
+  report:
+    name: Generate Allure Report
+    needs: verify          # WAITS for the Windows job to finish
+    if: always()           # RUNS even if tests failed (so we see the red graph)
+    runs-on: ubuntu-latest # SWITCHES to Linux to support the Allure Docker container
+
+    steps:
+    - name: Checkout Code (for History)
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0 # Important for history
+
+    # HAND-OFF STEP: Download the XML results from the Windows job
+    - name: Download Test Results
+      uses: actions/download-artifact@v4
+      with:
+        name: raw-test-results
+        path: all-test-results
+
     - name: Load Test History
       uses: actions/checkout@v4
       if: always()
@@ -53,7 +78,7 @@ jobs:
       uses: simple-elf/allure-report-action@master
       if: always()
       with:
-        allure_results: tests/Dosimetry.Tests/TestResults
+        allure_results: all-test-results
         allure_history: gh-pages/allure-history
         keep_reports: 20
 
