@@ -1,1 +1,1 @@
-[]
+[{"uid":"a97b10f6d5f374ff","name":"TC02_SafetyInterlock_PreventOverdose","time":{"start":1771013993962,"stop":1771013994630,"duration":668},"status":"passed","severity":"normal"},{"uid":"8f6bae08835d9172","name":"TC03_DataPersistence_Restart","time":{"start":1771013994632,"stop":1771013995429,"duration":797},"status":"failed","severity":"normal"},{"uid":"8d82a7911a6246a4","name":"TC01_GoldenPath_BillingIntegration","time":{"start":1771013980615,"stop":1771013993940,"duration":13325},"status":"passed","severity":"critical"}]

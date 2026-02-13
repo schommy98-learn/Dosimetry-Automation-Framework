@@ -1,0 +1,1 @@
+[Core] Connecting to Database at: C:\Users\runneradmin\Documents\medical_shared.db
