@@ -33,10 +33,8 @@ jobs:
 
     - name: Execute Verification (Generate TRX)
       continue-on-error: true
-      # We force the results into a specific folder so we can find them easily
       run: dotnet test --configuration Debug --logger "trx;LogFileName=test_results.trx" --results-directory ./TestResults
 
-    # HAND-OFF STEP: Upload the raw XML results so the Linux job can see them
     - name: Upload Test Results
       uses: actions/upload-artifact@v4
       with:
@@ -49,17 +47,14 @@ jobs:
   # -----------------------------------------------------------------
   report:
     name: Generate Allure Report
-    needs: verify          # WAITS for the Windows job to finish
-    if: always()           # RUNS even if tests failed (so we see the red graph)
-    runs-on: ubuntu-latest # SWITCHES to Linux to support the Allure Docker container
+    needs: verify
+    if: always()
+    runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Code (for History)
+    - name: Checkout Code
       uses: actions/checkout@v4
-      with:
-        fetch-depth: 0 # Important for history
 
-    # HAND-OFF STEP: Download the XML results from the Windows job
     - name: Download Test Results
       uses: actions/download-artifact@v4
       with:
@@ -79,7 +74,10 @@ jobs:
       if: always()
       with:
         allure_results: all-test-results
-        allure_history: gh-pages/allure-history
+        # We tell it where the OLD history is
+        allure_history: gh-pages/history
+        # We tell it where to save the NEW report
+        allure_report: allure-report
         keep_reports: 20
 
     - name: Deploy Report to GitHub Pages
@@ -88,4 +86,5 @@ jobs:
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_branch: gh-pages
-        publish_dir: allure-history
+        # FIX IS HERE: We publish the REPORT, not the history folder
+        publish_dir: allure-report
