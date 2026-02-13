@@ -1,4 +1,4 @@
 "DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
-"","675","TC02_SafetyInterlock_PreventOverdose","","Fri Feb 13 18:05:56 UTC 2026","passed","Fri Feb 13 18:05:57 UTC 2026","","Dosimetry.Tests.VerificationSuite","Dosimetry.Tests.VerificationSuite",""
-"","815","TC03_DataPersistence_Restart","","Fri Feb 13 18:05:57 UTC 2026","failed","Fri Feb 13 18:05:58 UTC 2026","","Dosimetry.Tests.VerificationSuite","Dosimetry.Tests.VerificationSuite",""
-"","12947","TC01_GoldenPath_BillingIntegration","","Fri Feb 13 18:05:43 UTC 2026","passed","Fri Feb 13 18:05:56 UTC 2026","","Dosimetry.Tests.VerificationSuite","Dosimetry.Tests.VerificationSuite",""
+"","15478","TC01_GoldenPath_BillingIntegration","","Fri Feb 13 19:58:24 UTC 2026","passed","Fri Feb 13 19:58:40 UTC 2026","","Dosimetry.Tests.VerificationSuite","Dosimetry.Tests.VerificationSuite",""
+"","895","TC03_DataPersistence_Restart","","Fri Feb 13 19:58:40 UTC 2026","failed","Fri Feb 13 19:58:41 UTC 2026","","Dosimetry.Tests.VerificationSuite","Dosimetry.Tests.VerificationSuite",""
+"","624","TC02_SafetyInterlock_PreventOverdose","","Fri Feb 13 19:58:40 UTC 2026","passed","Fri Feb 13 19:58:40 UTC 2026","","Dosimetry.Tests.VerificationSuite","Dosimetry.Tests.VerificationSuite",""
