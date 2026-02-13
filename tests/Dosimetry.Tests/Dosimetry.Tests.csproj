@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="allure.nunit" Version="2.14.1" />
     <PackageReference Include="ExtentReports" Version="5.0.4" />
     <PackageReference Include="FlaUI.UIA3" Version="4.0.0" />
     <PackageReference Include="Microsoft.Playwright.NUnit" Version="1.41.0" />
