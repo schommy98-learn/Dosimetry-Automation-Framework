@@ -201,7 +201,7 @@ namespace Dosimetry.Tests
                 conn.Open();
                 var cmd = conn.CreateCommand();
                 //For testing bad test step: change Patients WHERE Id = Patient_Normal, is pass and Patient_Hazard is fail
-                cmd.CommandText = "SELECT IsFinalized FROM Patients WHERE Id = 'Patient_Normal'";
+                cmd.CommandText = "SELECT IsFinalized FROM Patients WHERE Id = 'Patient_Hazard'";
                 long result = (long)cmd.ExecuteScalar();
                 isHazardFinalized = (result == 1);
             }
