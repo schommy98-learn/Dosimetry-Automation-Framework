@@ -13,10 +13,14 @@ using System;
 using System.Runtime.InteropServices; // Required for OS Detection
 using AventStack.ExtentReports;
 using AventStack.ExtentReports.Reporter;
+using Allure.NUnit.Attributes;
+using Allure.NUnit; // <--- NEW
+using Allure.Net.Commons; // <--- NEW
 
 namespace Dosimetry.Tests
 {
     [TestFixture]
+    [AllureNUnit] // <--- This activates the magic
     public class VerificationSuite
     {
         // REPORTING ENGINES
@@ -88,12 +92,27 @@ namespace Dosimetry.Tests
         }
 
         // ---------------------------------------------------------
-        // TEST CASE 1: HAPPY PATH
-        // ---------------------------------------------------------
-        [Test, Order(1)]
-        [Category("Functional")]
-        [Property("SRS", "REQ-1.2: Billing Integration")]
-        public async Task TC01_GoldenPath_BillingIntegration()
+                // TEST CASE 1: HAPPY PATH
+                // ---------------------------------------------------------
+                [Test, Order(1)]
+                [Category("Functional")]
+                
+                // MAPPING TO YOUR SPREADSHEET:
+                // Column: "Product A" -> Feature
+                [AllureFeature("Patient Billing Module")] 
+                
+                // Column: "Test Suite X" -> Story
+                [AllureStory("User can finalize a billable dose")] 
+                
+                // Column: "SRS / FRD" -> Links (Clickable in the report!)
+                [AllureLink("SRS-1.2")] 
+                [AllureIssue("GH-1")] // Links to GitHub Issue #1
+                
+                // Column: "Version" -> Tags
+                [AllureTag("v1.2.0")]
+                [AllureOwner("Jason")]
+                [AllureSeverity(SeverityLevel.critical)]
+                public async Task TC01_GoldenPath_BillingIntegration()
         {
             StartTest("TC-01: Billing Integration", "REQ-1.2");
             

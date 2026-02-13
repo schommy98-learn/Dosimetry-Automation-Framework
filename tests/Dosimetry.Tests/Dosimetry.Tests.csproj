@@ -25,5 +25,9 @@
     <ProjectReference Include="..\..\src\Dosimetry.Core\Dosimetry.Core.csproj" />
     <ProjectReference Include="..\..\src\DosimetryWPF\DosimetryWPF.csproj" />
   </ItemGroup>
-
+  <ItemGroup>
+      <None Update="allureConfig.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+   </ItemGroup>
 </Project>

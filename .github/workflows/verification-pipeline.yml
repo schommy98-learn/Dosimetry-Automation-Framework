@@ -31,16 +31,17 @@ jobs:
         dotnet build
         pwsh bin/Debug/net8.0-windows/playwright.ps1 install --with-deps
 
-    - name: Execute Verification (Generate TRX)
+# We remove the TRX logger because Allure.NUnit handles it now
+    - name: Execute Verification
       continue-on-error: true
-      run: dotnet test --configuration Debug --logger "trx;LogFileName=test_results.trx" --results-directory ./TestResults
+      run: dotnet test --configuration Debug
 
     - name: Upload Test Results
       uses: actions/upload-artifact@v4
       with:
-        name: raw-test-results
-        path: TestResults/*.trx
-        if-no-files-found: error
+            name: raw-test-results
+            path: tests/Dosimetry.Tests/bin/Debug/net8.0/allure-results
+            if-no-files-found: error
 
   # -----------------------------------------------------------------
   # JOB 2: THE REPORTER (LINUX)
@@ -73,12 +74,10 @@ jobs:
       uses: simple-elf/allure-report-action@master
       if: always()
       with:
-        allure_results: all-test-results
-        # We tell it where the OLD history is
-        allure_history: gh-pages/history
-        # We tell it where to save the NEW report
-        allure_report: allure-report
-        keep_reports: 20
+            allure_results: all-test-results # This matches the downloaded artifact folder
+            allure_history: gh-pages/history
+            allure_report: allure-report
+            keep_reports: 20
 
     - name: Deploy Report to GitHub Pages
       if: always()
